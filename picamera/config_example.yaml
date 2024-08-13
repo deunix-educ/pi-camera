@@ -1,0 +1,45 @@
+audio:
+  channels: 1
+  description: Audio from Webcam logitech c110
+  duration: 10
+  ip: 192.168.1.17
+  lat: 43.83385
+  lon: 2.33675
+  model_id: C110
+  org: organisation
+  rate: 8000
+  record: 0
+  sensor: audio
+  service: audio:idx6
+  title: Webcam C110 Pro
+  topic_base: organisation/0x63ea787698e6efa0
+  topic_subs:
+  - - organisation/0x63ea787698e6efa0/set/#
+    - 0
+  uuid: '0x63ea787698e6efa0'
+  vendor: logitech
+camera:
+  area: 50
+  camid: 0
+  contour: 0
+  description: Webcam logitech c110
+  fps: 15
+  ip: 192.168.1.17
+  lat: 43.83385
+  lon: 2.33675
+  model_id: C110
+  org: organisation
+  record: 0
+  rotate: 0
+  rotation: 0
+  sensor: camera
+  service: webcam:video0
+  size: 320x240
+  title: Webcam C110
+  topic_base: organisation/0x1627a1541909eb02
+  topic_subs:
+  - - organisation/0x1627a1541909eb02/#
+    - 0
+  uuid: '0x1627a1541909eb02'
+  vendor: logitech
+  zoom: 0.5
