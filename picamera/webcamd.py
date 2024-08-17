@@ -19,10 +19,8 @@ def load_mqtt_configuration(mqtt_type='local'):
 def load_configuration(conf_file):
     settings = yaml_load(conf_file)
     if not settings['camera']['uuid']:
-        #uuid = gen_device_uuid()
         uuid = f'0x{gen_device_uuid()}'
         org = settings['camera']['org']
-
         settings['camera']['uuid'] = uuid
         settings['camera']['topic_base'] = f"{org}/{uuid}"
         settings['camera']['topic_subs']= [ [f"{org}/{uuid}/#", 0], ]
@@ -30,15 +28,16 @@ def load_configuration(conf_file):
     return dict(conf_file=conf_file, **settings)
 
 
-def main(conf_file, mqtt_type):
+def main(conf_file):
     daemon = None
     try:
-        mqtt = load_mqtt_configuration(mqtt_type)
         config = load_configuration(conf_file)
+        mqtt_type = config['camera'].get('mqtt')
+        mqtt = load_mqtt_configuration(mqtt_type)
         daemon = VideoReader(mqtt, **config)
         daemon.start_services()
     except Exception as e:
-        print(f'\n    webcamd error {e}')
+        print(f'\nwebcamd error {e}')
     finally:
         if daemon:
             daemon.stop_services()
@@ -47,9 +46,9 @@ def main(conf_file, mqtt_type):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Webcam device")
     parser.add_argument("--config", default='config.yaml', help="Config yaml file path", required=False)
-    parser.add_argument("--mqtt", default='local', help="local or vpn", required=False)
+    #parser.add_argument("--mqtt", default='local', help="local, public or vpn", required=False)
     args = parser.parse_args()
-    if args.config and args.mqtt:
-        main(args.config, args.mqtt)
+    if args.config:
+        main(args.config)
 
 

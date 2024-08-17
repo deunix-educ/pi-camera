@@ -39,12 +39,12 @@ def load_configuration(conf_file):
     return dict(device=audio, conf_file=conf_file, **settings)
     
 
-def main(conf_file, mqtt_type):
+def main(conf_file):
     daemon = None
     try:
-        mqtt = load_mqtt_configuration(mqtt_type)
         config = load_configuration(conf_file)
-        
+        mqtt_type = config['audio'].get('mqtt')
+        mqtt = load_mqtt_configuration(mqtt_type)
         daemon = AudioReader(mqtt, **config)
         daemon.start_services()
 
@@ -57,8 +57,7 @@ def main(conf_file, mqtt_type):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Webcam device")
     parser.add_argument("--config", default='config.yaml', help="Config yaml file path", required=False)
-    parser.add_argument("--mqtt", default='local', help="local or vpn", required=False)
-    args = parser.parse_args()
-    if args.config and args.mqtt:
-        main(args.config, args.mqtt)
+       args = parser.parse_args()
+    if args.config:
+        main(args.config)
 

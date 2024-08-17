@@ -13,12 +13,7 @@ RECORD_NONE = 0
 RECORD_CONTINUOUS = 1
 
 class Topic(utils.TopicBase):
-    #    0     1    2   3   4    5     6   7
-    # origine/dev/uuid/evt/ts/counter/lat/lon
-    topickeys = {
-        'org': 0, 'uuid': 1, 'evt': 2,  'action': 3,
-        'ts': 3, 'counter': 4, 'lat': 5, 'lon': 6,
-    }
+    topickeys = { 'org': 0, 'uuid': 1, 'evt': 2,  'action': 3, 'ts': 3, 'counter': 4, 'lat': 5, 'lon': 6,  }
 
 
 class AudioReader(MqttBase, Thread):
@@ -32,7 +27,8 @@ class AudioReader(MqttBase, Thread):
         uuid = self.args('uuid')
         MqttBase.__init__(self, uuid=uuid, topic_base=topic_base ,topic_subs=topic_subs, **mqtt)
         Thread.__init__(self, daemon=True)
-
+        self.mqtt = self.args('mqtt')
+        self.lat = self.args('lat')
         self.lat = self.args('lat')
         self.lon = self.args('lon')
         self.title = self.args('title')
@@ -53,6 +49,7 @@ class AudioReader(MqttBase, Thread):
         self.channels = self.set_args('channels', int(payload.get('channels', 1)))
         self.rate = self.set_args('rate', int(payload.get('rate',8000 )))        
         self.duration = self.set_args('duration', int(payload.get('duration', 15)))
+        self.mqtt = self.set_args('mqtt', int(payload.get('mqtt', 'local')))
         self.save_config(payload)
         #self.record = self.set_args('record', int(payload.get('rec', 0)))
         #return utils.yaml_save(self.conf_file, self.settings)
@@ -110,6 +107,7 @@ class AudioReader(MqttBase, Thread):
                 rate=self.rate,
                 duration=self.duration,
                 state='play' if self.play else 'pause',
+                mqtt=self.mqtt,
                 )
             ),
         )

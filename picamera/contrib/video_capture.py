@@ -29,6 +29,7 @@ class VideoReader(MqttBase, Thread):
         MqttBase.__init__(self, uuid=uuid, topic_base=topic_base ,topic_subs=topic_subs, **mqtt_settings)
         Thread.__init__(self, daemon=True)
         # options
+        self.mqtt = self.args('mqtt')
         self.camid = self.args('camid')
         self.area = self.args('area')
         self.lat = self.args('lat')
@@ -61,11 +62,12 @@ class VideoReader(MqttBase, Thread):
               
     def save_configuration(self, payload):
         try:     
-            self.rotate = self.set_args('rotate', int(payload.get('rot', 0)))
+            self.rotate = self.set_args('rotate', int(payload.get('rotate', 0)))
             self.fps = self.set_args('fps', int(payload.get('fps', 5)))
             self.record = self.set_args('record', int(payload.get('record', 0)))
             self.zoom = self.set_args('zoom', float(payload.get('zoom', 1.0)))
-            self.contour = self.set_args('contour', int(payload.get('cnt', 0)))
+            self.contour = self.set_args('contour', int(payload.get('contour', 0)))
+            self.mqtt = self.set_args('mqtt', int(payload.get('mqtt', 'local')))
             self.save_config(payload)
         except Exception as e:
             logger.error(f"{e}")
@@ -119,11 +121,12 @@ class VideoReader(MqttBase, Thread):
             options = json.dumps(dict(
                 lat=self.lat,
                 lon=self.lon,
-                rot=int(self.rotate),
+                rotate=int(self.rotate),
                 zoom=self.zoom,
                 fps=self.fps,
                 mobile=self.args('mobile'),
-                cnt=self.contour,
+                contour=self.contour,
+                mqtt=self.mqtt,
                 state=self.get_state(self.play),
                 sleeping=self.sleeping,
                 )

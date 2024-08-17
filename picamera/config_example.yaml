@@ -5,7 +5,9 @@ audio:
   ip: 192.168.1.17
   lat: 43.83385
   lon: 2.33675
+  mobile: false
   model_id: C110
+  mqtt: local
   org: organisation
   rate: 8000
   record: 0
@@ -27,7 +29,9 @@ camera:
   ip: 192.168.1.17
   lat: 43.83385
   lon: 2.33675
+  mobile: false
   model_id: C110
+  mqtt: local
   org: organisation
   record: 0
   rotate: 0
