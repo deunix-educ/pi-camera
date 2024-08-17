@@ -15,12 +15,7 @@ RECORD_MOTION_DETECTION = 2
 
 
 class Topic(utils.TopicBase):
-    #    0     1    2   3    4     5   6   7
-    # origine/uuid/evt/ts/counter/lat/lon/fps
-    topickeys = {
-        'org': 0, 'uuid': 1, 'evt': 2, 
-        'action': 3, 'ts': 3, 'counter': 4, 'lat': 5, 'lon': 6, 'fps': 7,
-    }
+    topickeys = {'org': 0, 'uuid': 1, 'evt': 2, 'action': 3, 'ts': 3, 'counter': 4, 'lat': 5, 'lon': 6, 'fps': 7,  }
 
 
 class VideoReader(MqttBase, Thread):
@@ -33,7 +28,6 @@ class VideoReader(MqttBase, Thread):
         uuid = self.args('uuid')
         MqttBase.__init__(self, uuid=uuid, topic_base=topic_base ,topic_subs=topic_subs, **mqtt_settings)
         Thread.__init__(self, daemon=True)
-
         # options
         self.camid = self.args('camid')
         self.area = self.args('area')
@@ -51,27 +45,28 @@ class VideoReader(MqttBase, Thread):
         
         self.play = True
         self.counter = 0
+        self.sleeping = False
         self.reader_stop = Event()
         
         
     def get_state(self, state):
         return 'play' if state else 'pause'
     
+    
     def save_config(self, payload):
         self.record = self.set_args('record', int(payload.get('record', 0)))
         utils.yaml_save(self.conf_file, self.settings)
         logger.info(f"Save config record: {self.record}")
+  
               
     def save_configuration(self, payload):
         try:     
-            self.rotate = self.set_args('rotate', int(payload.get('rotate', 0)))
+            self.rotate = self.set_args('rotate', int(payload.get('rot', 0)))
             self.fps = self.set_args('fps', int(payload.get('fps', 5)))
             self.record = self.set_args('record', int(payload.get('record', 0)))
             self.zoom = self.set_args('zoom', float(payload.get('zoom', 1.0)))
-            self.contour = self.set_args('contour', int(payload.get('contour', 0)))
+            self.contour = self.set_args('contour', int(payload.get('cnt', 0)))
             self.save_config(payload)
-            #self.record = self.set_args('record', int(payload.get('record', 0)))
-            #utils.yaml_save(self.conf_file, self.settings)
         except Exception as e:
             logger.error(f"{e}")
 
@@ -84,13 +79,16 @@ class VideoReader(MqttBase, Thread):
         self.settings['camera'][k] = value
         return value
 
+
     def start_services(self):
         self.start()
         self.startMQTT()
 
+
     def stop_services(self):
         self.reader_stop.set()
         self.stopMQTT()
+
 
     def publish(self, evt, **payload):
         if self.topic_base:
@@ -98,8 +96,8 @@ class VideoReader(MqttBase, Thread):
             #logger.info(f"Device publish: {topic}::{payload}")
             self._publish_message(topic, **payload)
 
+
     def publish_frame(self, frame):
-        # origine/uuid/evt/ts/counter/lat/lon/fps
         if self.topic_base and frame:
             topic = f"{self.topic_base}/jpg/{utils.ts_now(m=1000)}/{self.counter}/{self.lat}/{self.lon}/{self.fps}"
             #logger.info(f"Device publish frame: {topic}")
@@ -124,8 +122,10 @@ class VideoReader(MqttBase, Thread):
                 rot=int(self.rotate),
                 zoom=self.zoom,
                 fps=self.fps,
+                mobile=self.args('mobile'),
                 cnt=self.contour,
                 state=self.get_state(self.play),
+                sleeping=self.sleeping,
                 )
             ),
         )
@@ -137,7 +137,8 @@ class VideoReader(MqttBase, Thread):
             if not self.record:
                 self.play = False
                 logger.info(f'Web page is not alive for {self.uuid}')
-                self.publish('report', retain=True, sleeping=True, **self.makeReport())
+                self.sleeping = True
+                self.publish('report', retain=True, **self.makeReport())
 
 
     def _on_log(self, mqttc, obj, level, string):
@@ -151,7 +152,8 @@ class VideoReader(MqttBase, Thread):
 
     def _on_connect_info(self, info):
         logger.info(f'report: {self.uuid} {info}')
-        self.publish('report', retain=True, sleeping=False, **self.makeReport())
+        self.sleeping = False
+        self.publish('report', retain=True, **self.makeReport())
 
 
     def _on_message_callback(self, topic, payload):
@@ -172,10 +174,12 @@ class VideoReader(MqttBase, Thread):
                 elif action == 'save':
                     self.save_configuration(payload)
                     logger.info(f"Save config {self.uuid}: {payload}")
-                self.publish('report', retain=True, sleeping=False, **self.makeReport())
+                self.sleeping = False
+                self.publish('report', retain=True, **self.makeReport())
         elif evt=='rec':
             self.save_config(payload)
-            self.publish('report', retain=True, sleeping=False, **self.makeReport())
+            self.sleeping = False
+            self.publish('report', retain=True, **self.makeReport())
         elif evt=='pong':
             self.pong_time = payload.get('ts')
 
