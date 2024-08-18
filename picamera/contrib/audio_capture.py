@@ -104,6 +104,7 @@ class AudioReader(MqttBase, Thread):
                 lat=self.lat,
                 lon=self.lon,
                 channels=self.channels,
+                mobile=self.args('mobile'),
                 rate=self.rate,
                 duration=self.duration,
                 state='play' if self.play else 'pause',
