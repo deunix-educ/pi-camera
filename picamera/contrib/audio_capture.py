@@ -28,8 +28,8 @@ class AudioReader(MqttBase, Thread):
         MqttBase.__init__(self, uuid=uuid, topic_base=topic_base ,topic_subs=topic_subs, **mqtt)
         Thread.__init__(self, daemon=True)
         self.mqtt = self.args('mqtt')
-        self.lat = self.args('lat')
-        self.lat = self.args('lat')
+        self.lat = utils.gps_conv(self.args('lat'))
+        self.lon = utils.gps_conv(self.args('lon'))        
         self.lon = self.args('lon')
         self.title = self.args('title')
         self.channels = self.args('channels')
@@ -101,8 +101,8 @@ class AudioReader(MqttBase, Thread):
 
             options = json.dumps(dict(
                 rec = self.record,
-                lat=self.lat,
-                lon=self.lon,
+                lat=self.args('lat'),
+                lon=self.args('lon'),
                 channels=self.channels,
                 mobile=self.args('mobile'),
                 rate=self.rate,

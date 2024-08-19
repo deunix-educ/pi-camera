@@ -29,11 +29,12 @@ class VideoReader(MqttBase, Thread):
         MqttBase.__init__(self, uuid=uuid, topic_base=topic_base ,topic_subs=topic_subs, **mqtt_settings)
         Thread.__init__(self, daemon=True)
         # options
+        #gps_conv(s, n=1000000, default='NaN'):
         self.mqtt = self.args('mqtt')
         self.camid = self.args('camid')
         self.area = self.args('area')
-        self.lat = self.args('lat')
-        self.lon = self.args('lon')
+        self.lat = utils.gps_conv(self.args('lat'))
+        self.lon = utils.gps_conv(self.args('lon'))
         self.rotate = self.args('rotate')
         self.zoom = self.args('zoom')
         self.fps = self.args('fps')
@@ -93,14 +94,13 @@ class VideoReader(MqttBase, Thread):
 
 
     def publish(self, evt, **payload):
-        if self.topic_base:
-            topic = f'{self.topic_base}/{evt}'
-            #logger.info(f"Device publish: {topic}::{payload}")
-            self._publish_message(topic, **payload)
+        topic = f'{self.topic_base}/{evt}'
+        #logger.info(f"Device publish: {topic}::{payload}")
+        self._publish_message(topic, **payload)
 
 
     def publish_frame(self, frame):
-        if self.topic_base and frame:
+        if frame:
             topic = f"{self.topic_base}/jpg/{utils.ts_now(m=1000)}/{self.counter}/{self.lat}/{self.lon}/{self.fps}"
             #logger.info(f"Device publish frame: {topic}")
             self._publish_bytes(topic, frame)
@@ -119,8 +119,8 @@ class VideoReader(MqttBase, Thread):
             service=self.args('service'),
             record=self.record,         
             options = json.dumps(dict(
-                lat=self.lat,
-                lon=self.lon,
+                lat=self.args('lat'),
+                lon=self.args('lat'),
                 rotate=int(self.rotate),
                 zoom=self.zoom,
                 fps=self.fps,
