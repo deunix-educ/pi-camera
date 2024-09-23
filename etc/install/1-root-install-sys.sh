@@ -14,7 +14,6 @@ apt update
 #apt upgrade
 
 apt install supervisor v4l-utils python3-pip python3.11-venv python3-dev 
-#portaudio19-dev libasound2-dev
 
 # rpi4 rpi3 venv
 # apt install libopenjp2-7 libavcodec-dev libavformat-dev libswscale-dev liblapack-dev libgtk-3-dev libatlas-base-dev
